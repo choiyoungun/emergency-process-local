@@ -11,7 +11,7 @@
 - 허수아비: `scenes/dummy.tscn` (HP 100, 맞으면 붉게 깜빡이고 0이 되면 2초 뒤 부활). 기사 앞 2m 에 배치됨
 
 ## 말하는 섬 (블록아웃)
-- `scripts/talking_island.gd` 가 코드로 지형/마을/숲/던전 입구/사냥터를 생성 (`main.tscn` 의 `Island` 노드)
-- 광장(원점)에서 시작. 북쪽 던전 입구, 동쪽 늑대/서쪽 고블린 사냥터, 남쪽 선착장
-- 건물/사냥터 위치는 스크립트 상단 `BUILDINGS`, `ZONES` 상수로 조절
-- 임시 형태이므로 참고 지도에 맞춰 배치를 수정할 예정
+- 참고 이미지: `docs/talking_island_reference.jpg` — 윤곽/배치는 이 이미지의 픽셀 좌표를 상수로 옮긴 것 (`OUTLINE_PX`, `ZONES`, `VILLAGE_PX`, `PX_SCALE=0.3m/px`)
+- `scripts/talking_island.gd` 가 코드로 지형(만/작은 섬 포함)/마을/흙길/밭/숲/던전 입구/선착장을 생성 (`main.tscn` 의 `Island` 노드)
+- 월드 원점 = 마을 광장(기사 시작). 던전은 북서, 선착장은 남동, 늑대는 동쪽, 고블린은 남쪽 숲
+- 나무는 MultiMesh(모바일 성능), 충돌 없음. 모델/텍스처는 아직 임시 도형
