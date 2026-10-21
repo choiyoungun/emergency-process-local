@@ -8,4 +8,4 @@
 - 실제 기사 모델로 교체: Mixamo 리그(`mixamorig:`) 모델 `.glb/.fbx` 를 `Visual/Model` 로 바꾸고 `show_skeleton` 을 끄면 됨
 - 적은 collision layer 2 에 두면 칼 `Hitbox` 가 감지하고 `take_damage(10)` 을 호출
 - `docs/motion_preview.svg`: 모션 포즈 미리보기
-- 허수아비: `scenes/dummy.tscn` (HP 100, 맞으면 붉게 깜빡이고 0이 되면 2초 뒤 부활). 기사 앞 3m 에 배치됨
+- 허수아비: `scenes/dummy.tscn` (HP 100, 맞으면 붉게 깜빡이고 0이 되면 2초 뒤 부활). 기사 앞 2m 에 배치됨
