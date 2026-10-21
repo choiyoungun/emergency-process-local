@@ -3,29 +3,37 @@ extends Node3D
 ## 참고 이미지의 픽셀 좌표를 그대로 상수로 두고 PX_SCALE 로 미터 변환한다.
 ## 월드 원점 = 마을 광장 (기사 시작 위치). 북쪽 = -Z.
 
-const PX_SCALE := 0.3                  # 참고 이미지 1px = 0.3m
-const VILLAGE_PX := Vector2(330, 890)  # 마을 광장 위치 (이미지 좌표)
-const BEACH_WIDTH := 4.0               # m
+const PX_SCALE := 0.1                  # 참고 지도 1px = 0.1m (섬 가로 약 175m)
+const VILLAGE_PX := Vector2(935, 375)  # 마을 광장 위치 (참고 지도 좌표, 2000x1022)
+const BEACH_WIDTH := 3.0               # m
 const PLAZA_RADIUS := 8.0
-const VILLAGE_CLEAR := 22.0            # 이 반경 안에는 나무 없음
-const TREE_COUNT := 260
+const VILLAGE_CLEAR := 20.0            # 이 반경 안에는 나무 없음
+const TREE_COUNT := 450
+const SHOW_REGIONS := true             # 속성별 사냥터 색 구역 표시
 
-## 섬 윤곽 (이미지 좌표, 시계 방향). 북쪽의 만(bay)이 안으로 파고든 모양.
+## 섬 윤곽 (참고 지도 좌표, 시계 방향). 북쪽에 만(bay)이 있고 북서 갈고리 모양 반도가 감싼다.
 const OUTLINE_PX := [
-	Vector2(165, 935), Vector2(180, 885), Vector2(215, 840), Vector2(260, 820),
-	Vector2(300, 805), Vector2(335, 790), Vector2(355, 780), Vector2(372, 805),
-	Vector2(385, 840), Vector2(420, 848), Vector2(452, 832), Vector2(472, 852),
-	Vector2(520, 870), Vector2(565, 870), Vector2(600, 880), Vector2(640, 885),
-	Vector2(680, 895), Vector2(712, 915), Vector2(700, 945), Vector2(670, 960),
-	Vector2(630, 975), Vector2(590, 985), Vector2(560, 990), Vector2(530, 1002),
-	Vector2(500, 1030), Vector2(470, 1045), Vector2(400, 1050), Vector2(330, 1050),
-	Vector2(270, 1040), Vector2(220, 1010), Vector2(180, 985), Vector2(160, 960),
+	Vector2(325, 240), Vector2(400, 225), Vector2(470, 235), Vector2(545, 195),
+	Vector2(580, 130), Vector2(640, 100), Vector2(730, 85), Vector2(800, 95),
+	Vector2(880, 70), Vector2(940, 55), Vector2(1010, 55), Vector2(1070, 70),
+	Vector2(1115, 105), Vector2(1120, 150), Vector2(1085, 180), Vector2(1020, 188),
+	Vector2(950, 190), Vector2(895, 185), Vector2(860, 200), Vector2(850, 240),
+	Vector2(865, 285), Vector2(920, 300), Vector2(990, 300), Vector2(1050, 290),
+	Vector2(1110, 270), Vector2(1170, 262), Vector2(1215, 290), Vector2(1240, 335),
+	Vector2(1235, 385), Vector2(1290, 395), Vector2(1330, 375), Vector2(1390, 375),
+	Vector2(1450, 365), Vector2(1520, 355), Vector2(1600, 345), Vector2(1700, 335),
+	Vector2(1800, 335), Vector2(1890, 355), Vector2(1950, 410), Vector2(1980, 470),
+	Vector2(1965, 540), Vector2(1900, 620), Vector2(1820, 690), Vector2(1720, 740),
+	Vector2(1620, 775), Vector2(1540, 790), Vector2(1480, 815), Vector2(1430, 870),
+	Vector2(1380, 915), Vector2(1250, 905), Vector2(1170, 885), Vector2(1090, 915),
+	Vector2(1000, 928), Vector2(900, 930), Vector2(800, 935), Vector2(700, 935),
+	Vector2(600, 925), Vector2(520, 905), Vector2(440, 860), Vector2(380, 810),
+	Vector2(350, 740), Vector2(300, 660), Vector2(250, 590), Vector2(228, 530),
+	Vector2(228, 470), Vector2(240, 420), Vector2(265, 375), Vector2(290, 345),
+	Vector2(325, 300),
 ]
 
-## 북쪽 만 안쪽의 작은 섬 [중심(이미지 좌표), 반경(px)]
-const ISLET_PX := [Vector2(412, 775), 22.0]
-
-## [이름, 각도(도, 0=동쪽, 시계 방향이 +), 광장 중심에서의 거리, 가로, 세로, 높이, 지붕 색]
+## 마을 광장 둘레 건물. [이름, 각도(도, 0=동쪽, 시계 방향이 +), 광장에서 거리, 가로, 세로, 높이, 지붕 색]
 const BUILDINGS := [
 	["상점", 20.0, 15.0, 5.0, 4.0, 3.0, Color(0.75, 0.35, 0.25)],
 	["여관", 70.0, 16.0, 6.0, 5.0, 3.5, Color(0.55, 0.35, 0.2)],
@@ -35,13 +43,45 @@ const BUILDINGS := [
 	["창고", 320.0, 15.0, 5.0, 4.0, 3.0, Color(0.5, 0.45, 0.3)],
 ]
 
-## [이름, 이미지 좌표, 마커 색]
-const ZONES := [
-	["말하는 섬 던전", Vector2(255, 828), Color(0.6, 0.2, 0.8)],
-	["밭", Vector2(240, 925), Color(0.55, 0.4, 0.2)],
-	["고블린 사냥터", Vector2(400, 1005), Color(0.3, 0.8, 0.3)],
-	["늑대 사냥터", Vector2(620, 928), Color(0.9, 0.5, 0.2)],
-	["선착장", Vector2(515, 1008), Color(0.3, 0.6, 0.9)],
+## 지도의 번호 지점. [번호+이름, 지도 좌표, 마커 색, 길을 낼지]
+const POIS := [
+	["01.거미숲", Vector2(910, 665), Color(0.7, 0.8, 0.2), true],
+	["02.검은 기사단 선착장", Vector2(1233, 860), Color(0.3, 0.6, 0.9), true],
+	["03.검은 기사단 야영지", Vector2(1840, 460), Color(0.7, 0.7, 0.7), true],
+	["04.골렘의 집", Vector2(1255, 577), Color(0.9, 0.5, 0.2), true],
+	["05.군터의 집", Vector2(538, 355), Color(0.3, 0.8, 0.5), true],
+	["06.난쟁이 부락(동)", Vector2(1421, 388), Color(0.9, 0.5, 0.2), true],
+	["07.난쟁이 부락(서)", Vector2(660, 448), Color(0.9, 0.5, 0.2), true],
+	["08.말하는 섬 던전", Vector2(418, 373), Color(0.6, 0.2, 0.8), true],
+	["10.버려진 마을", Vector2(663, 614), Color(0.6, 0.5, 0.4), true],
+	["11.복섬", Vector2(980, 100), Color(0.9, 0.5, 0.2), false],
+	["12.오크망루", Vector2(423, 563), Color(0.3, 0.3, 0.9), true],
+	["13.오크부락", Vector2(424, 303), Color(0.3, 0.3, 0.9), true],
+]
+const DUNGEON_INDEX := 7
+const DOCK_INDEX := 1
+
+## 속성별 사냥터. [이름/몬스터, 색, 지도 좌표 다각형]
+## 빨강=불 취약, 파랑=물 취약, 노랑=땅 취약, 회색=흑기사단
+const RED := Color(0.85, 0.3, 0.3, 0.38)
+const BLUE := Color(0.35, 0.3, 0.9, 0.38)
+const YELLOW := Color(0.8, 0.8, 0.2, 0.45)
+const GRAY := Color(0.8, 0.8, 0.8, 0.30)
+const REGIONS := [
+	["늑대인간\n라이칸스로프, 골렘", RED, [Vector2(560, 200), Vector2(620, 110), Vector2(700, 95), Vector2(780, 100), Vector2(840, 140), Vector2(850, 230), Vector2(790, 255), Vector2(700, 255), Vector2(620, 245), Vector2(560, 215)]],
+	["복섬", RED, [Vector2(830, 110), Vector2(900, 70), Vector2(980, 65), Vector2(1060, 75), Vector2(1100, 110), Vector2(1090, 170), Vector2(1020, 185), Vector2(930, 185), Vector2(870, 170), Vector2(830, 150)]],
+	["오크부락\n오크 계열", BLUE, [Vector2(325, 240), Vector2(400, 228), Vector2(470, 235), Vector2(545, 300), Vector2(500, 330), Vector2(430, 320), Vector2(350, 320), Vector2(325, 290)]],
+	["던전 앞 오크\n오크, 창병, 궁수, 마법사, 좀비, 전사", BLUE, [Vector2(270, 375), Vector2(300, 340), Vector2(430, 350), Vector2(560, 345), Vector2(720, 310), Vector2(700, 350), Vector2(600, 400), Vector2(480, 480), Vector2(272, 505)]],
+	["난쟁이(서)\n드워프 창병, 검사, 궁수, 주술사", RED, [Vector2(470, 485), Vector2(600, 420), Vector2(690, 330), Vector2(780, 330), Vector2(840, 420), Vector2(870, 490), Vector2(830, 560), Vector2(740, 600), Vector2(640, 590), Vector2(560, 560), Vector2(480, 500)]],
+	["오크망루\n괴물 눈, 골렘, 오크 전 계열", BLUE, [Vector2(235, 520), Vector2(470, 490), Vector2(615, 540), Vector2(600, 590), Vector2(520, 660), Vector2(480, 730), Vector2(400, 725), Vector2(330, 650), Vector2(255, 570)]],
+	["셀로브, 웅골리언트", RED, [Vector2(850, 470), Vector2(920, 445), Vector2(1030, 455), Vector2(1130, 510), Vector2(1185, 555), Vector2(1160, 595), Vector2(1070, 610), Vector2(960, 600), Vector2(850, 600), Vector2(745, 600), Vector2(780, 540)]],
+	["거미숲\n떠도는 유령, 원한의 망령", YELLOW, [Vector2(785, 640), Vector2(830, 605), Vector2(1000, 600), Vector2(1145, 605), Vector2(1145, 660), Vector2(1060, 680), Vector2(940, 690), Vector2(830, 685), Vector2(790, 665)]],
+	["셀로브, 웅골리언트\n흑기사 정찰병", RED, [Vector2(800, 695), Vector2(1100, 680), Vector2(1160, 625), Vector2(1270, 640), Vector2(1290, 700), Vector2(1260, 760), Vector2(1190, 830), Vector2(1160, 870), Vector2(1075, 915), Vector2(1070, 790), Vector2(1000, 770), Vector2(920, 745), Vector2(800, 720)]],
+	["남서 오크\n오크, 창병, 궁수, 마법사, 좀비", BLUE, [Vector2(365, 800), Vector2(480, 730), Vector2(600, 715), Vector2(785, 720), Vector2(790, 925), Vector2(520, 905), Vector2(440, 860), Vector2(380, 820)]],
+	["남쪽 오크\n변종 셀로브, 웅골리언트, 오크 전 계열", BLUE, [Vector2(795, 725), Vector2(1000, 780), Vector2(1070, 800), Vector2(1075, 915), Vector2(930, 930), Vector2(800, 930), Vector2(760, 800)]],
+	["난쟁이(동)\n드워프 창병, 검사, 궁수, 주술사", RED, [Vector2(1195, 420), Vector2(1330, 395), Vector2(1430, 385), Vector2(1520, 360), Vector2(1610, 355), Vector2(1600, 430), Vector2(1520, 500), Vector2(1420, 580), Vector2(1300, 570), Vector2(1195, 460)]],
+	["검은 기사단 야영지\n장로, 흑기사, 다이어울프", GRAY, [Vector2(1660, 385), Vector2(1820, 380), Vector2(1960, 420), Vector2(1980, 480), Vector2(1930, 560), Vector2(1800, 650), Vector2(1700, 730), Vector2(1560, 780), Vector2(1440, 740), Vector2(1400, 640), Vector2(1500, 580), Vector2(1640, 500), Vector2(1670, 430)]],
+	["선착장", GRAY, [Vector2(1170, 700), Vector2(1300, 700), Vector2(1420, 740), Vector2(1400, 830), Vector2(1330, 880), Vector2(1230, 880), Vector2(1170, 860)]],
 ]
 
 var _rng := RandomNumberGenerator.new()
@@ -56,12 +96,12 @@ func _ready() -> void:
 	_build_water()
 	_add_land("Sand", sand, Color(0.85, 0.78, 0.55), 0.0, true)
 	_add_land("Grass", _grass, Color(0.3, 0.55, 0.25), 0.08, false)
-	_build_islet()
 	_add_disk("Plaza", Vector3.ZERO, PLAZA_RADIUS, Color(0.6, 0.6, 0.62), 0.14)
+	if SHOW_REGIONS:
+		_build_regions(sand)
 	_build_paths()
-	_build_farm()
 	_build_village()
-	_build_zones()
+	_build_pois()
 	_build_forest()
 
 
@@ -113,11 +153,6 @@ func _add_land(land_name: String, poly: PackedVector2Array, color: Color, top: f
 		m.add_child(body)
 
 
-func _build_islet() -> void:
-	var c := _px(ISLET_PX[0])
-	var r: float = ISLET_PX[1] * PX_SCALE
-	_add_disk("IsletSand", c, r, Color(0.85, 0.78, 0.55), 0.0, true)
-	_add_disk("IsletGrass", c, r * 0.65, Color(0.3, 0.55, 0.25), 0.08)
 
 
 ## 윗면이 y=top 인 원판 (solid 면 충돌 포함)
@@ -146,7 +181,9 @@ func _add_disk(disk_name: String, center: Vector3, radius: float, color: Color, 
 ## 마을 광장에서 각 구역으로 가는 흙길
 func _build_paths() -> void:
 	var dirt := _mat(Color(0.6, 0.48, 0.3))
-	for z in ZONES:
+	for z in POIS:
+		if not z[3]:
+			continue
 		var a := Vector3.ZERO
 		var b := _px(z[1])
 		var length := a.distance_to(b)
@@ -154,27 +191,14 @@ func _build_paths() -> void:
 			continue
 		var path := MeshInstance3D.new()
 		var mesh := BoxMesh.new()
-		mesh.size = Vector3(3.0, 0.04, length)
+		mesh.size = Vector3(1.6, 0.04, length)
 		path.mesh = mesh
 		path.material_override = dirt
-		path.position = (a + b) * 0.5 + Vector3(0, 0.2, 0)
+		path.position = (a + b) * 0.5 + Vector3(0, 0.24, 0)
 		path.rotation.y = atan2(-(b - a).x, -(b - a).z)
 		add_child(path)
 
 
-## 서쪽의 갈색 밭 구획
-func _build_farm() -> void:
-	var soil := _mat(Color(0.4, 0.28, 0.15))
-	var c := _px(ZONES[1][1])
-	for ix in 2:
-		for iz in 2:
-			var plot := MeshInstance3D.new()
-			var mesh := BoxMesh.new()
-			mesh.size = Vector3(9, 0.04, 6)
-			plot.mesh = mesh
-			plot.material_override = soil
-			plot.position = c + Vector3(ix * 11 - 5.5, 0.2, iz * 8 - 4)
-			add_child(plot)
 
 
 func _build_village() -> void:
@@ -217,21 +241,53 @@ func _add_house(house_name: String, pos: Vector3, size: Vector3, roof_color: Col
 	body.add_child(_label(house_name, Vector3(0, size.y * 1.6 + 0.5, 0)))
 
 
-func _build_zones() -> void:
-	for z in ZONES:
+
+
+## 속성별 사냥터를 반투명 색으로 덮고 이름/몬스터를 라벨로 표시 (섬 밖은 잘라냄)
+func _build_regions(land: PackedVector2Array) -> void:
+	for r in REGIONS:
+		var poly := _to_world(r[2])
+		var clipped := Geometry2D.intersect_polygons(poly, land)
+		for part in clipped:
+			var idx := Geometry2D.triangulate_polygon(part)
+			if idx.is_empty():
+				continue
+			var st := SurfaceTool.new()
+			st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			for i in idx:
+				st.set_normal(Vector3.UP)
+				st.add_vertex(Vector3(part[i].x, 0.16, part[i].y))
+			var m := MeshInstance3D.new()
+			m.mesh = st.commit()
+			var mat := _mat(r[1])
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+			m.material_override = mat
+			add_child(m)
+		var c := Vector2.ZERO
+		for p in poly:
+			c += p
+		c /= poly.size()
+		var l := _label(r[0], Vector3(c.x, 2.5, c.y))
+		l.font_size = 40
+		add_child(l)
+
+
+func _build_pois() -> void:
+	for z in POIS:
 		var pos := _px(z[1])
 		var marker := MeshInstance3D.new()
 		var mesh := CylinderMesh.new()
-		mesh.top_radius = 3.0
-		mesh.bottom_radius = 3.0
+		mesh.top_radius = 2.0
+		mesh.bottom_radius = 2.0
 		mesh.height = 0.1
 		marker.mesh = mesh
-		marker.position = pos + Vector3(0, 0.3, 0)
+		marker.position = pos + Vector3(0, 0.34, 0)
 		marker.material_override = _mat(z[2])
 		add_child(marker)
-		marker.add_child(_label(z[0], Vector3(0, 3.0, 0)))
-	_build_dungeon_gate(_px(ZONES[0][1]))
-	_build_dock(_px(ZONES[4][1]))
+		marker.add_child(_label(z[0], Vector3(0, 4.0, 0)))
+	_build_dungeon_gate(_px(POIS[DUNGEON_INDEX][1]))
+	_build_dock(_px(POIS[DOCK_INDEX][1]))
 
 
 func _build_dungeon_gate(pos: Vector3) -> void:
@@ -241,10 +297,10 @@ func _build_dungeon_gate(pos: Vector3) -> void:
 	_add_block(pos + Vector3(0, 5.5, -3.0), Vector3(8, 1.5, 2), rock)
 
 
-## 선착장 부두 + 배(단순 상자)
+## 선착장 부두 + 배(단순 상자). 부두는 남쪽 바다로 뻗고 배는 그 옆에 정박
 func _build_dock(pos: Vector3) -> void:
-	_add_block(pos + Vector3(0, 0.1, 6), Vector3(4, 0.2, 10), _mat(Color(0.45, 0.32, 0.2)), false)
-	_add_block(pos + Vector3(0, 1.2, 14), Vector3(7, 2.4, 14), _mat(Color(0.55, 0.15, 0.12)), false)
+	_add_block(pos + Vector3(0, 0.1, 8), Vector3(3, 0.2, 10), _mat(Color(0.45, 0.32, 0.2)), false)
+	_add_block(pos + Vector3(7, 1.5, 15), Vector3(6, 3.0, 14), _mat(Color(0.55, 0.15, 0.12)), false)
 
 
 func _add_block(pos: Vector3, size: Vector3, mat: Material, solid := true) -> void:
@@ -265,21 +321,18 @@ func _add_block(pos: Vector3, size: Vector3, mat: Material, solid := true) -> vo
 	add_child(body)
 
 
-## 나무는 MultiMesh(모바일 성능) + 충돌 없음. 남쪽(+Z)일수록 빽빽하게.
+## 나무는 MultiMesh(모바일 성능) + 충돌 없음.
 func _build_forest() -> void:
 	var spots: Array[Vector3] = []
 	var scales: Array[float] = []
 	var tries := 0
 	while spots.size() < TREE_COUNT and tries < TREE_COUNT * 40:
 		tries += 1
-		var p := Vector2(_rng.randf_range(-60, 120), _rng.randf_range(-35, 50))
+		var p := Vector2(_rng.randf_range(-75, 105), _rng.randf_range(-33, 56))
 		if not Geometry2D.is_point_in_polygon(p, _grass):
 			continue
 		var v := Vector3(p.x, 0, p.y)
 		if v.length() < VILLAGE_CLEAR or _near_zone(v):
-			continue
-		var south_bias := clampf((p.y + 10.0) / 40.0, 0.1, 1.0)
-		if _rng.randf() > south_bias:
 			continue
 		spots.append(v)
 		scales.append(_rng.randf_range(0.8, 1.4))
@@ -312,7 +365,7 @@ func _add_multimesh(mm_name: String, mesh: Mesh, mat: Material, spots: Array[Vec
 
 
 func _near_zone(p: Vector3) -> bool:
-	for z in ZONES:
+	for z in POIS:
 		if p.distance_to(_px(z[1])) < 7.0:
 			return true
 	return false

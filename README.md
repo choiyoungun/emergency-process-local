@@ -11,7 +11,7 @@
 - 허수아비: `scenes/dummy.tscn` (HP 100, 맞으면 붉게 깜빡이고 0이 되면 2초 뒤 부활). 기사 앞 2m 에 배치됨
 
 ## 말하는 섬 (블록아웃)
-- 참고 이미지: `docs/talking_island_reference.jpg` — 윤곽/배치는 이 이미지의 픽셀 좌표를 상수로 옮긴 것 (`OUTLINE_PX`, `ZONES`, `VILLAGE_PX`, `PX_SCALE=0.3m/px`)
-- `scripts/talking_island.gd` 가 코드로 지형(만/작은 섬 포함)/마을/흙길/밭/숲/던전 입구/선착장을 생성 (`main.tscn` 의 `Island` 노드)
-- 월드 원점 = 마을 광장(기사 시작). 던전은 북서, 선착장은 남동, 늑대는 동쪽, 고블린은 남쪽 숲
+- 배치 기준: 리니지M 인벤 말하는 섬 지도(2000x1022, 저장소에는 포함하지 않음). 윤곽/지점/사냥터 좌표는 그 지도의 픽셀 좌표를 상수로 옮긴 것 (`OUTLINE_PX`, `POIS`, `REGIONS`, `VILLAGE_PX`, `PX_SCALE=0.1m/px`)
+- `scripts/talking_island.gd` 가 코드로 지형(북쪽 만, 북서 반도)/마을/흙길/13개 지점/속성별 사냥터 색 구역(불=빨강, 물=파랑, 땅=노랑, 흑기사단=회색)/숲/던전 입구/선착장을 생성 (`main.tscn` 의 `Island` 노드)
+- 월드 원점 = 마을 광장(기사 시작). `SHOW_REGIONS` 로 사냥터 색 구역 on/off
 - 나무는 MultiMesh(모바일 성능), 충돌 없음. 모델/텍스처는 아직 임시 도형
