@@ -184,10 +184,10 @@ func _build_paths() -> void:
 	for z in POIS:
 		if not z[3]:
 			continue
-		var a := Vector3.ZERO
 		var b := _px(z[1])
+		var a := b.normalized() * PLAZA_RADIUS   # 광장 가장자리에서 시작
 		var length := a.distance_to(b)
-		if length < 1.0:
+		if length < 1.0 or b.length() < PLAZA_RADIUS:
 			continue
 		var path := MeshInstance3D.new()
 		var mesh := BoxMesh.new()
