@@ -9,3 +9,9 @@
 - 적은 collision layer 2 에 두면 칼 `Hitbox` 가 감지하고 `take_damage(10)` 을 호출
 - `docs/motion_preview.svg`: 모션 포즈 미리보기
 - 허수아비: `scenes/dummy.tscn` (HP 100, 맞으면 붉게 깜빡이고 0이 되면 2초 뒤 부활). 기사 앞 2m 에 배치됨
+
+## 말하는 섬 (블록아웃)
+- `scripts/talking_island.gd` 가 코드로 지형/마을/숲/던전 입구/사냥터를 생성 (`main.tscn` 의 `Island` 노드)
+- 광장(원점)에서 시작. 북쪽 던전 입구, 동쪽 늑대/서쪽 고블린 사냥터, 남쪽 선착장
+- 건물/사냥터 위치는 스크립트 상단 `BUILDINGS`, `ZONES` 상수로 조절
+- 임시 형태이므로 참고 지도에 맞춰 배치를 수정할 예정
