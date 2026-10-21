@@ -6,10 +6,12 @@ const SPEED := 5.0
 const GRAVITY := 20.0
 
 const MODEL_SCALE := 0.1       # FBX 뼈대가 사람 크기의 약 10배 -> Model 노드 스케일과 동일해야 함
-const ATTACK_SPEED := 1.4      # 원본 1.82초는 느려서 배속 재생
+## 리니지 영상 기준 박자: 공격 주기 0.5초, 타격은 시작 후 약 0.15~0.23초.
+const ATTACK_SPEED := 2.0      # 원본 1.82초는 느려서 배속 재생
+const ATTACK_START := 0.6      # 애니메이션 앞부분(준비 동작)을 건너뛰고 이 시점부터 재생 (초)
 const HIT_START := 0.88        # 타격 판정 구간 (애니메이션 시간 기준, 초)
 const HIT_END := 1.06
-const CANCEL_AT := 1.3         # 이 시점부터 다음 행동 가능 (후딜 취소)
+const CANCEL_AT := 1.6         # 이 시점부터 다음 행동 가능 (후딜 취소) -> 주기 (1.6-0.6)/2.0 = 0.5초
 const ATTACK_RANGE := 1.6      # m, 클릭한 적에게 이 거리까지 다가가서 공격
 const ARRIVE_DIST := 0.15      # m, 클릭 이동 도착 판정
 const SWORD_LENGTH := 1.2      # m
@@ -165,6 +167,7 @@ func _start_attack() -> void:
 	anim.speed_scale = ATTACK_SPEED
 	anim.stop()
 	anim.play(attack_anim)
+	anim.seek(ATTACK_START, true)
 
 
 ## 대기 자세 = 공격 애니메이션 첫 프레임(준비 자세)에서 정지

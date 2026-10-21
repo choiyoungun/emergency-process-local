@@ -5,7 +5,7 @@
 - 카메라: `scripts/quarter_camera.gd` 쿼터뷰(고정 각도, 기사를 부드럽게 추적). `offset`/`follow_speed` 로 조절
 - 클릭 이동은 직선 이동(길찾기 없음) — 건물/벽에 막히면 멈춤
 - 모션: Mixamo `Great Sword Slash` (`assets/animations/Great_Sword_Slash.fbx`, 뼈대만 포함, 1.82초)
-  - `scripts/knight.gd` 상단 상수로 배속(`ATTACK_SPEED`), 타격 판정 구간(`HIT_START`/`HIT_END`), 후딜 취소(`CANCEL_AT`) 조절
+  - `scripts/knight.gd` 상단 상수로 배속(`ATTACK_SPEED`), 시작 지점(`ATTACK_START`, 준비 동작 생략), 타격 판정 구간(`HIT_START`/`HIT_END`), 후딜 취소(`CANCEL_AT`) 조절. 현재 값은 리니지 영상 기준 공격 주기 약 0.5초, 타격 약 0.17~0.27초
   - 모델 스케일 `MODEL_SCALE = 0.1` (FBX 뼈대가 사람 크기의 약 10배)
 - 실제 기사 모델로 교체: Mixamo 리그(`mixamorig:`) 모델 `.glb/.fbx` 를 `Visual/Model` 로 바꾸고 `show_skeleton` 을 끄면 됨
 - 적은 collision layer 2 에 두면 칼 `Hitbox` 가 감지하고 `take_damage(10)` 을 호출
