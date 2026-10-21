@@ -1,5 +1,5 @@
 extends CharacterBody3D
-## 기사 이동 + Mixamo "Great Sword Slash" 공격 (좌클릭 / J / Space).
+## 기사 이동(WASD / 클릭 이동) + Mixamo "Great Sword Slash" 공격 (J / Space / 적 클릭).
 ## Model 은 뼈대만 있는 FBX 이므로 실제 기사 모델(Mixamo 리그)로 교체하면 그대로 동작한다.
 
 const SPEED := 5.0
@@ -10,6 +10,8 @@ const ATTACK_SPEED := 1.4      # 원본 1.82초는 느려서 배속 재생
 const HIT_START := 0.88        # 타격 판정 구간 (애니메이션 시간 기준, 초)
 const HIT_END := 1.06
 const CANCEL_AT := 1.3         # 이 시점부터 다음 행동 가능 (후딜 취소)
+const ATTACK_RANGE := 1.6      # m, 클릭한 적에게 이 거리까지 다가가서 공격
+const ARRIVE_DIST := 0.15      # m, 클릭 이동 도착 판정
 const SWORD_LENGTH := 1.2      # m
 const GRIP_OFFSET := 0.05      # m, 손목에서 칼날 시작까지
 
@@ -25,6 +27,10 @@ var hitbox: Area3D
 var attack_anim: StringName
 var attacking := false
 var _hit_targets: Array = []
+var _move_target := Vector3.ZERO
+var _has_move_target := false
+var _attack_target: Node3D
+var _click_marker: MeshInstance3D
 var _debug_mesh: ImmediateMesh
 
 
@@ -38,6 +44,7 @@ func _ready() -> void:
 	anim.get_animation(attack_anim).loop_mode = Animation.LOOP_NONE
 	anim.animation_finished.connect(_on_animation_finished)
 	_build_sword()
+	_build_click_marker()
 	if show_skeleton:
 		_build_debug_skeleton()
 	_to_ready_pose()
@@ -59,14 +66,92 @@ func _physics_process(delta: float) -> void:
 			attacking = false
 			hitbox.set_deferred("monitoring", false)
 
-	# 공격 중에는 이동 느리게
+	# 이동 방향: 키보드(WASD)가 우선, 없으면 클릭 이동
 	var dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if dir != Vector2.ZERO:
+		_clear_click_target()
+	else:
+		dir = _click_move_dir()
+
+	# 공격 중에는 이동 느리게
 	var speed := SPEED * (0.3 if attacking else 1.0)
 	velocity.x = dir.x * speed
 	velocity.z = dir.y * speed
 	if dir != Vector2.ZERO and not attacking:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-dir.x, -dir.y), 15.0 * delta)
 	move_and_slide()
+
+
+## 클릭한 위치/적을 향한 이동 방향(XZ). 도착했거나 목표가 없으면 ZERO.
+func _click_move_dir() -> Vector2:
+	if _attack_target:
+		if not is_instance_valid(_attack_target) or _attack_target.get("hp") == 0:
+			_clear_click_target()
+			return Vector2.ZERO
+		var to_enemy := _attack_target.global_position - global_position
+		to_enemy.y = 0.0
+		if to_enemy.length() <= ATTACK_RANGE:
+			if not attacking:
+				visual.rotation.y = atan2(-to_enemy.x, -to_enemy.z)
+				_start_attack()
+			return Vector2.ZERO
+		return Vector2(to_enemy.x, to_enemy.z).normalized()
+	if _has_move_target:
+		var to_point := _move_target - global_position
+		to_point.y = 0.0
+		if to_point.length() <= ARRIVE_DIST:
+			_clear_click_target()
+			return Vector2.ZERO
+		return Vector2(to_point.x, to_point.z).normalized()
+	return Vector2.ZERO
+
+
+func _clear_click_target() -> void:
+	_has_move_target = false
+	_attack_target = null
+	_click_marker.visible = false
+
+
+## 마우스 왼쪽 클릭 / 터치(마우스로 에뮬레이션): 땅이면 이동, 적이면 추적 공격
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	var from := cam.project_ray_origin(event.position)
+	var to := from + cam.project_ray_normal(event.position) * 500.0
+	var query := PhysicsRayQueryParameters3D.create(from, to, 1 | 2)   # 땅(1) + 적(2)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return
+	var collider: Object = hit["collider"]
+	if collider.has_method("take_damage"):
+		_attack_target = collider
+		_has_move_target = false
+		_click_marker.visible = false
+	else:
+		_attack_target = null
+		_move_target = hit["position"]
+		_has_move_target = true
+		_click_marker.global_position = _move_target + Vector3(0, 0.3, 0)
+		_click_marker.visible = true
+
+
+func _build_click_marker() -> void:
+	_click_marker = MeshInstance3D.new()
+	var mesh := TorusMesh.new()
+	mesh.inner_radius = 0.25
+	mesh.outer_radius = 0.4
+	_click_marker.mesh = mesh
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = Color(1.0, 0.9, 0.3)
+	_click_marker.material_override = mat
+	_click_marker.top_level = true
+	_click_marker.visible = false
+	add_child(_click_marker)
 
 
 func _process(_delta: float) -> void:
@@ -176,11 +261,6 @@ func _setup_input() -> void:
 	_bind("move_right", KEY_D)
 	_bind("attack", KEY_J)
 	_bind("attack", KEY_SPACE)
-	if not InputMap.has_action("attack"):
-		InputMap.add_action("attack")
-	var m := InputEventMouseButton.new()
-	m.button_index = MOUSE_BUTTON_LEFT
-	InputMap.action_add_event("attack", m)
 
 
 func _bind(action: String, key: Key) -> void:
