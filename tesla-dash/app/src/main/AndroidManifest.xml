@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <queries>
+        <package android:name="com.skt.tmap.ku" />
+        <package android:name="com.skt.skaf.l001mtm091" />
+    </queries>
+
     <application
+        android:resizeableActivity="true"
         android:label="Tesla Dash"
         android:theme="@style/Theme.TeslaDash">
         <activity
