@@ -25,7 +25,8 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val state = vm.state.collectAsStateWithLifecycle().value
-            DashScreen(state)
+            val nav = vm.navState.collectAsStateWithLifecycle().value
+            DashScreen(state, nav)
         }
     }
 }

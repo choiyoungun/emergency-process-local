@@ -3,6 +3,7 @@ package com.example.tesladash.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,15 +17,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tesladash.data.Gear
+import com.example.tesladash.data.NavState
 import com.example.tesladash.data.VehicleState
 
 private val Accent = Color(0xFF3FA9F5)
 private val Dim = Color(0xFF8A8F98)
 
 @Composable
-fun DashScreen(s: VehicleState) {
+fun DashScreen(s: VehicleState, nav: NavState?) {
+    Column(Modifier.fillMaxSize().background(Color.Black).padding(24.dp)) {
+    if (nav != null) NavBanner(nav)
     Row(
-        Modifier.fillMaxSize().background(Color.Black).padding(24.dp),
+        Modifier.weight(1f).fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -46,6 +50,27 @@ fun DashScreen(s: VehicleState) {
             Text("%.0f kW".format(s.powerKw), color = if (s.powerKw < 0) Color(0xFF4CD964) else Color.White,
                 fontSize = 40.sp, fontWeight = FontWeight.Bold)
             Text(if (s.powerKw < 0) "회생" else "출력", color = Dim, fontSize = 18.sp)
+        }
+    }
+    }
+}
+
+@Composable
+private fun NavBanner(n: NavState) {
+    Row(
+        Modifier.fillMaxWidth().background(Color(0xFF111316), RoundedCornerShape(12.dp)).padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(n.turn.arrow, color = Accent, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            val dist = if (n.distanceToTurnM >= 1000) "%.1f km".format(n.distanceToTurnM / 1000f) else "${n.distanceToTurnM} m"
+            Text(dist, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text(n.roadName, color = Dim, fontSize = 16.sp)
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text("%.1f km".format(n.remainingKm), color = Color.White, fontSize = 20.sp)
+            Text("${n.etaMinutes}분", color = Dim, fontSize = 16.sp)
         }
     }
 }
