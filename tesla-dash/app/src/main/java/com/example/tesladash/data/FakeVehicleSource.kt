@@ -10,6 +10,7 @@ class FakeVehicleSource : VehicleSource {
     override fun states(): Flow<VehicleState> = flow {
         var t = 0.0
         var battery = 80f
+        var n = 0
         while (true) {
             val speed = (60 + 60 * sin(t / 8.0 - 1.5)).coerceAtLeast(0.0)
             val accel = 60.0 / 8.0 * kotlin.math.cos(t / 8.0 - 1.5)
@@ -23,9 +24,15 @@ class FakeVehicleSource : VehicleSource {
                     rangeKm = (battery * 5.2f).toInt(),
                     powerKw = power,
                     outsideTempC = 18.5f,
+                    turnSignal = when (n % 300) {
+                        in 100..159 -> TurnSignal.Left
+                        in 200..259 -> TurnSignal.Right
+                        else -> TurnSignal.Off
+                    },
                 )
             )
             t += 0.1
+            n++
             delay(100)
         }
     }

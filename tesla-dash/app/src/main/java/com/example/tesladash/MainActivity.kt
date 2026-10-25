@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import com.example.tesladash.ui.CameraBeeper
 import com.example.tesladash.ui.DashScreen
 import com.example.tesladash.ui.DashViewModel
+import com.example.tesladash.ui.SideCameraOverlay
 import com.example.tesladash.ui.SportScreen
 
 class MainActivity : ComponentActivity() {
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 ) { sport.value = !sport.value },
             ) {
                 if (sport.value) SportScreen(state, nav) else DashScreen(state, nav)
+                SideCameraOverlay(state.turnSignal, Modifier.fillMaxSize())
             }
         }
     }
