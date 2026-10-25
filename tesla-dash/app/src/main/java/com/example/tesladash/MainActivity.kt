@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import com.example.tesladash.ui.CameraBeeper
 import com.example.tesladash.ui.DashScreen
 import com.example.tesladash.ui.DashViewModel
+import com.example.tesladash.ui.NaviScreen
 import com.example.tesladash.ui.SideCameraOverlay
 import com.example.tesladash.ui.SportScreen
 
@@ -49,13 +50,17 @@ class MainActivity : ComponentActivity() {
                     delay(1_000)
                 }
             }
-            val sport = rememberSaveable { mutableStateOf(true) }
+            val layout = rememberSaveable { mutableStateOf(0) } // 0=스포츠, 1=기본, 2=내비
             Box(
                 Modifier.fillMaxSize().clickable(
                     interactionSource = remember { MutableInteractionSource() }, indication = null,
-                ) { sport.value = !sport.value },
+                ) { layout.value = (layout.value + 1) % 3 },
             ) {
-                if (sport.value) SportScreen(state, nav) else DashScreen(state, nav)
+                when (layout.value) {
+                    0 -> SportScreen(state, nav)
+                    1 -> DashScreen(state, nav)
+                    else -> NaviScreen(state, nav)
+                }
                 SideCameraOverlay(state.turnSignal, Modifier.fillMaxSize())
             }
         }
