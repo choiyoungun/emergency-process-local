@@ -79,7 +79,7 @@ private fun BatteryBar(percent: Int) {
 
 /** TMAP 지도 연동 전까지 쓰는 샘플 지도. 길안내 정보는 NavState로 위에 겹쳐 그린다. */
 @Composable
-private fun MapPanel(nav: NavState?, speedKmh: Int, modifier: Modifier) {
+internal fun MapPanel(nav: NavState?, speedKmh: Int, modifier: Modifier) {
     Box(modifier.background(Color(0xFF0F1418), RoundedCornerShape(16.dp))) {
         Canvas(Modifier.fillMaxSize()) {
             val grid = Color(0xFF1A2128)

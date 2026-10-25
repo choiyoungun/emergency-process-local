@@ -23,6 +23,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import com.example.tesladash.ui.CameraBeeper
+import com.example.tesladash.ui.ClusterScreen
 import com.example.tesladash.ui.CompactScreen
 import com.example.tesladash.ui.DashScreen
 import com.example.tesladash.ui.DashViewModel
@@ -56,11 +57,11 @@ class MainActivity : ComponentActivity() {
                     delay(1_000)
                 }
             }
-            val layout = rememberSaveable { mutableStateOf(0) } // 0=스포츠, 1=기본, 2=내비
+            val layout = rememberSaveable { mutableStateOf(3) } // 0=스포츠, 1=기본, 2=내비, 3=클러스터
             BoxWithConstraints(
                 Modifier.fillMaxSize().clickable(
                     interactionSource = remember { MutableInteractionSource() }, indication = null,
-                ) { layout.value = (layout.value + 1) % 3 },
+                ) { layout.value = (layout.value + 1) % 4 },
             ) {
                 // 분할 화면처럼 창이 좁으면 간단한 레이아웃으로 바꾼다.
                 if (maxWidth < 560.dp) {
@@ -68,7 +69,8 @@ class MainActivity : ComponentActivity() {
                 } else when (layout.value) {
                     0 -> SportScreen(state, nav)
                     1 -> DashScreen(state, nav)
-                    else -> NaviScreen(state, nav)
+                    2 -> NaviScreen(state, nav)
+                    else -> ClusterScreen(state, nav)
                 }
                 SideCameraOverlay(state.turnSignal, Modifier.fillMaxSize())
                 TmapButton(
