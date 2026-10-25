@@ -17,9 +17,13 @@ class FakeNavSource : NavSource {
         var remainingKm = 12.4f
         var i = 0
         var dist = 800.0
+        var camDist = 1200.0
         while (true) {
             val (turn, road) = steps[i % steps.size]
-            emit(NavState(turn, dist.toInt(), road, remainingKm, (remainingKm / 0.8f).toInt()))
+            val camera = if (camDist <= 500) CameraAlert(CameraType.Fixed, camDist.toInt(), 80) else null
+            emit(NavState(turn, dist.toInt(), road, remainingKm, (remainingKm / 0.8f).toInt(), camera))
+            camDist -= 15.0
+            if (camDist < 0) camDist = 1200.0
             dist -= 15.0 * 0.1 * 10
             remainingKm = (remainingKm - 0.015f).coerceAtLeast(0f)
             if (dist <= 0) { i++; dist = 800.0 }

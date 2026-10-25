@@ -2,6 +2,7 @@ package com.example.tesladash.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -16,17 +17,20 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tesladash.data.CameraAlert
 import com.example.tesladash.data.Gear
 import com.example.tesladash.data.NavState
 import com.example.tesladash.data.VehicleState
 
 private val Accent = Color(0xFF3FA9F5)
 private val Dim = Color(0xFF8A8F98)
+private val Warn = Color(0xFFFF3B30)
 
 @Composable
 fun DashScreen(s: VehicleState, nav: NavState?) {
     Column(Modifier.fillMaxSize().background(Color.Black).padding(24.dp)) {
     if (nav != null) NavBanner(nav)
+    nav?.camera?.let { CameraBar(it, s.speedKmh) }
     Row(
         Modifier.weight(1f).fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -40,7 +44,7 @@ fun DashScreen(s: VehicleState, nav: NavState?) {
         Box(Modifier.weight(1.4f), contentAlignment = Alignment.Center) {
             SpeedArc(s.speedKmh)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("${s.speedKmh}", color = Color.White, fontSize = 110.sp, fontWeight = FontWeight.Bold)
+                Text("${s.speedKmh}", color = if (nav?.camera != null && s.speedKmh > nav.camera.limitKmh) Warn else Color.White, fontSize = 110.sp, fontWeight = FontWeight.Bold)
                 Text("km/h", color = Dim, fontSize = 20.sp)
             }
         }
@@ -95,5 +99,25 @@ private fun GearRow(current: Gear) {
             Text(it.name, fontSize = 30.sp, fontWeight = FontWeight.Bold,
                 color = if (it == current) Color.White else Color(0xFF3A3D42))
         }
+    }
+}
+
+@Composable
+private fun CameraBar(c: CameraAlert, speedKmh: Int) {
+    val over = speedKmh > c.limitKmh
+    Row(
+        Modifier.fillMaxWidth().padding(top = 8.dp)
+            .background(if (over) Color(0xFF5A1511) else Color(0xFF3A2A08), RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.size(44.dp).background(Color.White, androidx.compose.foundation.shape.CircleShape)
+                .border(4.dp, Warn, androidx.compose.foundation.shape.CircleShape),
+            contentAlignment = Alignment.Center,
+        ) { Text("${c.limitKmh}", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+        Spacer(Modifier.width(16.dp))
+        Text("${c.type.label} 단속카메라", color = Color.White, fontSize = 18.sp, modifier = Modifier.weight(1f))
+        Text("${c.distanceM} m", color = if (over) Warn else Color(0xFFFFC107), fontSize = 24.sp, fontWeight = FontWeight.Bold)
     }
 }
