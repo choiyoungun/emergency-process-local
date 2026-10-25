@@ -67,11 +67,11 @@ fun ClassicScreen(s: VehicleState, nav: NavState?) {
             dial(tm, Offset(size.width * 0.67f, cy), r, 9f, 1f, 0.5f, 7f, "x20 kW", s.powerKw / 20f) { it.roundToInt().toString() }
             val mr = r * 0.45f
             miniGauge(
-                tm, Offset(size.width * 0.1f, cy + r * 0.2f), mr, -60f, 100f, 1f - s.batteryPercent / 100f,
+                tm, Offset(size.width * 0.075f, cy + r * 0.2f), mr, -60f, 100f, 1f - s.batteryPercent / 100f,
                 listOf(0f to "F", 0.5f to "1/2", 1f to "E"), if (s.batteryPercent <= 20) Alert else Silver,
             )
             miniGauge(
-                tm, Offset(size.width * 0.9f, cy + r * 0.2f), mr, 140f, 100f, ((s.outsideTempC + 10f) / 50f),
+                tm, Offset(size.width * 0.925f, cy + r * 0.2f), mr, 140f, 100f, ((s.outsideTempC + 10f) / 50f),
                 listOf(0f to "C", 1f to "H"), Silver,
             )
         }
