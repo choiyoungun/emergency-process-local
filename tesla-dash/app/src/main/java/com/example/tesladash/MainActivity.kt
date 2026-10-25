@@ -5,7 +5,15 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -14,6 +22,7 @@ import kotlinx.coroutines.delay
 import com.example.tesladash.ui.CameraBeeper
 import com.example.tesladash.ui.DashScreen
 import com.example.tesladash.ui.DashViewModel
+import com.example.tesladash.ui.SportScreen
 
 class MainActivity : ComponentActivity() {
     private val vm: DashViewModel by viewModels()
@@ -39,7 +48,14 @@ class MainActivity : ComponentActivity() {
                     delay(1_000)
                 }
             }
-            DashScreen(state, nav)
+            val sport = rememberSaveable { mutableStateOf(true) }
+            Box(
+                Modifier.fillMaxSize().clickable(
+                    interactionSource = remember { MutableInteractionSource() }, indication = null,
+                ) { sport.value = !sport.value },
+            ) {
+                if (sport.value) SportScreen(state, nav) else DashScreen(state, nav)
+            }
         }
     }
 

@@ -60,7 +60,7 @@ fun DashScreen(s: VehicleState, nav: NavState?) {
 }
 
 @Composable
-private fun NavBanner(n: NavState) {
+internal fun NavBanner(n: NavState) {
     Row(
         Modifier.fillMaxWidth().background(Color(0xFF111316), RoundedCornerShape(12.dp)).padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -103,7 +103,7 @@ private fun GearRow(current: Gear) {
 }
 
 @Composable
-private fun CameraBar(c: CameraAlert, speedKmh: Int) {
+internal fun CameraBar(c: CameraAlert, speedKmh: Int) {
     val over = speedKmh > c.limitKmh
     Row(
         Modifier.fillMaxWidth().padding(top = 8.dp)
