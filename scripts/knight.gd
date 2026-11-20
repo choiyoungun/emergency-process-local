@@ -2,7 +2,12 @@ extends CharacterBody3D
 ## 기사 이동 + Mixamo "Great Sword Slash" 공격 (좌클릭 / J / Space).
 ## Model 은 뼈대만 있는 FBX 이므로 실제 기사 모델(Mixamo 리그)로 교체하면 그대로 동작한다.
 
+signal hp_changed(hp: int)
+signal died
+
 const SPEED := 5.0
+const MAX_HP := 100
+const AUTO_AIM_RANGE := 3.5    # 공격 시 이 거리 안의 가장 가까운 적을 자동 조준 (터치용)
 const GRAVITY := 20.0
 
 const MODEL_SCALE := 0.1       # FBX 뼈대가 사람 크기의 약 10배 -> Model 노드 스케일과 동일해야 함
@@ -24,11 +29,14 @@ var skeleton: Skeleton3D
 var hitbox: Area3D
 var attack_anim: StringName
 var attacking := false
+var hp := MAX_HP
+var dead := false
 var _hit_targets: Array = []
 var _debug_mesh: ImmediateMesh
 
 
 func _ready() -> void:
+	add_to_group("knight")
 	_setup_input()
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	anim = model.find_children("*", "AnimationPlayer", true, false)[0]
@@ -74,7 +82,35 @@ func _process(_delta: float) -> void:
 		_draw_skeleton()
 
 
+func take_damage(amount: int) -> void:
+	if dead:
+		return
+	hp = maxi(hp - amount, 0)
+	hp_changed.emit(hp)
+	if hp == 0:
+		dead = true
+		attacking = false
+		hitbox.set_deferred("monitoring", false)
+		velocity = Vector3.ZERO
+		set_physics_process(false)
+		died.emit()
+
+
+func _aim_at_nearest_enemy() -> void:
+	var best: Node3D = null
+	var best_d := AUTO_AIM_RANGE
+	for e in get_tree().get_nodes_in_group("enemy"):
+		var d := global_position.distance_to(e.global_position)
+		if d < best_d:
+			best_d = d
+			best = e
+	if best:
+		var to: Vector3 = best.global_position - global_position
+		visual.rotation.y = atan2(-to.x, -to.z)
+
+
 func _start_attack() -> void:
+	_aim_at_nearest_enemy()
 	attacking = true
 	_hit_targets.clear()
 	anim.speed_scale = ATTACK_SPEED
